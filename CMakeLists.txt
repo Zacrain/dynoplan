@@ -64,6 +64,11 @@ add_executable(main_dbastar ./src/dbastar/main_dbastar.cpp)
 add_executable(main_tdbastar ./src/tdbastar/main_tdbastar.cpp)
 add_executable(main_idbastar ./src/idbastar/main_idbastar.cpp)
 add_executable(main_dbrrt ./src/dbrrt/main_dbrrt.cpp)
+add_executable(
+  main_pibt
+  ./src/db-lacam/main_pibt.cpp ./src/db-lacam/pibt.cpp
+  ./src/dbastar/heuristics.cpp ./src/ompl/robots.cpp ./src/tdbastar/options.cpp
+  ./src/tdbastar/tdbastar.cpp)
 
 # target_compile_options(main PRIVATE -Wall -Wextra)
 
@@ -83,6 +88,12 @@ add_library(dbastar ./src/dbastar/dbastar.cpp ./src/dbastar/options.cpp
 
 add_library(tdbastar ./src/tdbastar/tdbastar.cpp ./src/ompl/robots.cpp
                      ./src/tdbastar/options.cpp ./src/dbastar/heuristics.cpp)
+
+add_library(pibt ./src/db-lacam/pibt.cpp ./src/ompl/robots.cpp
+                 ./src/tdbastar/options.cpp ./src/dbastar/heuristics.cpp)
+
+# add_library(main_pibt ./src/db-lacam/main_pibt.cpp ./src/ompl/robots.cpp
+# ./src/tdbastar/options.cpp ./src/dbastar/heuristics.cpp)
 
 add_library(
   tdbastar_epsilon
@@ -155,6 +166,14 @@ target_include_directories(
 
 target_include_directories(
   dbrrt
+  PUBLIC $<INSTALL_INTERFACE:include>
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+         ${OMPL_INCLUDE_DIRS}
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+          ${CMAKE_CURRENT_SOURCE_DIR}/deps/nigh/src)
+
+target_include_directories(
+  main_pibt
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
          ${OMPL_INCLUDE_DIRS}
@@ -274,6 +293,11 @@ target_link_libraries(
   PRIVATE fcl dynobench::dynobench ${OMPL_LIBRARIES} Boost::program_options
           Boost::serialization ${LZ4_LIBRARIES})
 
+target_link_libraries(
+  main_pibt
+  PUBLIC Eigen3::Eigen dynobench::dynobench
+  PRIVATE fcl ${OMPL_LIBRARIES} ${LZ4_LIBRARIES})
+
 # for tdb-A*
 add_library(idbastar::tdbastar ALIAS tdbastar) # for use in test folder
 add_library(idbastar::tdbastar_epsilon ALIAS tdbastar_epsilon)
@@ -305,6 +329,20 @@ target_include_directories(
 
 target_link_libraries(
   tdbastar_epsilon
+  PUBLIC Eigen3::Eigen dynobench::dynobench
+  PRIVATE fcl ${OMPL_LIBRARIES} ${LZ4_LIBRARIES})
+
+# db-lacam
+target_include_directories(
+  pibt
+  PUBLIC $<INSTALL_INTERFACE:include>
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+         ${OMPL_INCLUDE_DIRS}
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+          ${CMAKE_CURRENT_SOURCE_DIR}/deps/nigh/src)
+
+target_link_libraries(
+  pibt
   PUBLIC Eigen3::Eigen dynobench::dynobench
   PRIVATE fcl ${OMPL_LIBRARIES} ${LZ4_LIBRARIES})
 
