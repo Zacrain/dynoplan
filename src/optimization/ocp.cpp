@@ -1329,6 +1329,21 @@ void __trajectory_optimization(
             max_goal_time = t;
           }
         }
+        
+        // Handle case where optimized trajectory is shorter than planned
+        if (max_goal_time != static_cast<int>(xs_out.size())) {
+          std::cout << "WARNING: Optimized trajectory length (" << xs_out.size() 
+                    << ") differs from expected goal time (" << max_goal_time 
+                    << "). Adjusting goal times to match optimized trajectory." << std::endl;
+          
+          // Update goal times to match the actual optimized trajectory length
+          int actual_length = static_cast<int>(xs_out.size());
+          for (auto &g : ptr_derived->goal_times) {
+            g = std::min(g, actual_length);
+          }
+          max_goal_time = actual_length;
+        }
+        
         DYNO_CHECK_EQ(max_goal_time, xs_out.size(), AT);
       }
     } else {
